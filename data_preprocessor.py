@@ -6,6 +6,7 @@ import cv2
 
 image_file_name = './Dataset/Pixel2_No4_64_uncomp_1.jpeg'
 
+# Split image into R,G,B three color files
 def split_image_full_colors_to_sgl_color(org_image_file_name):
 
     full_color_image = cv2.imread(org_image_file_name,1)
@@ -23,7 +24,7 @@ def split_image_full_colors_to_sgl_color(org_image_file_name):
     return r.shape
 
 
-# load the image
+# Trim the image
 def trim_image(file_name):
     image = Image.open(file_name)
     # convert image to numpy array
@@ -80,18 +81,6 @@ def data_cleaner(data_array):
     rows = data_array.shape[0]
     mean = data_array.mean()
     data_array[data_array < (mean/3)] = mean
-
-    # for x in range(0,50):
-    #     mean_of_col = cleaned_data[:,x].mean()
-    #     for y in range(rows):
-    #         if cleaned_data[y,x] < mean_of_col/4:
-    #             cleaned_data[y, x] = mean_of_col
-    #
-    # for x in range(columns-50, columns):
-    #     mean_of_col = cleaned_data[:,x].mean()
-    #     for y in range(rows):
-    #         if cleaned_data[y,x] < mean_of_col/4:
-    #             cleaned_data[y, x] = mean_of_col
     return data_array
 
 
