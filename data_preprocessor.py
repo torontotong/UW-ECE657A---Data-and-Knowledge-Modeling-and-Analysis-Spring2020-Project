@@ -1,8 +1,11 @@
+from os import listdir
+
 from PIL import Image
 from numpy import asarray, ma
 import pandas as pd
 import numpy as np
 import cv2
+import scipy.misc
 
 image_file_name = './Dataset/Pixel2_No4_64_uncomp_1.jpeg'
 
@@ -77,29 +80,44 @@ def plot_histogram(fea_np, color):
 
 def data_cleaner(data_array):
     # get Data array size
+    clean_dataarray = data_array
     columns = data_array.shape[1]
     rows = data_array.shape[0]
     mean = data_array.mean()
-    data_array[data_array < (mean/3)] = mean
+    clean_dataarray[clean_dataarray < (mean/3)] = mean
     return data_array
 
 
 def load_image_file_to_array(file_name):
-    #im = Image.open(file_name)
-    #data_array = asarray(im)
     data_array = np.array(Image.open(file_name))
     return data_array
 
+
+def preprocess_image_file(dataset_path , file_name):
+    file_path = dataset_path+file_name
+    img = cv2.imread(file_path, cv2.IMREAD_GRAYSCALE)
+    fileStr = file_name.split('.')[0]
+    output_file_path = 'processed_data/'+ fileStr + '_g.jpeg'
+    cv2.imwrite(output_file_path,img)
+    file_path = output_file_path
+    trim_image(file_path)
+    data_array = np.array(Image.open(file_path))
+    clean_data = data_cleaner(data_array)
+    i = Image.fromarray(clean_data)
+    i.save(file_path)
+
+
 def main():
-    file_name_common = 'Pixel2_No4_64_uncomp_1'
-    x, y = split_image_full_colors_to_sgl_color(image_file_name)
-    for color in range(0,3):
-        file_name = file_name_common+'_'+str(color)+'.jpeg'
-        trim_image(file_name)
-        image_data_array = load_image_file_to_array(file_name)
-        clean_data = data_cleaner(image_data_array)
-        file_name = file_name_common+'_'+str(color)+'.csv'
-        np.savetxt(file_name, clean_data, delimiter=",")
+    dataset_path = 'Dataset/'
+    imageFileList = listdir(dataset_path)
+    file_num = len(imageFileList)
+    for i in range(file_num):
+        fileNameStr = imageFileList[i]
+        file_path = dataset_path+fileNameStr
+        if fileNameStr == '.DS_Store':
+            continue
+        preprocess_image_file(dataset_path, fileNameStr)
+
 
 
 if __name__ == '__main__':
