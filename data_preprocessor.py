@@ -5,7 +5,8 @@ from numpy import asarray, ma
 import pandas as pd
 import numpy as np
 import cv2
-import scipy.misc
+from math import sqrt,exp
+import matplotlib.pyplot as plt
 
 image_file_name = './Dataset/Pixel2_No4_64_uncomp_1.jpeg'
 
@@ -106,9 +107,55 @@ def preprocess_image_file(dataset_path , file_name):
     i = Image.fromarray(clean_data)
     i.save(file_path)
 
+def distance(point1,point2):
+    return sqrt((point1[0]-point2[0])**2 + (point1[1]-point2[1])**2)
+
+def gaussianLP(D0,imgShape):
+    base = np.zeros(imgShape[:2])
+    rows, cols = imgShape[:2]
+    center = (rows/2,cols/2)
+    for x in range(cols):
+        for y in range(rows):
+            base[y,x] = exp(((-distance((y,x),center)**2)/(2*(D0**2))))
+    return base
+
+def fft_Gaussian_LowPass_filer(dataset_path, file_name):
+    file_path = dataset_path+'/'+file_name
+    fileStr = file_name.split('.')[0]
+    output_file_path = 'FFTed_data/'+ fileStr + '_fft.png'
+    img = cv2.imread(file_path, cv2.IMREAD_GRAYSCALE)
+    img = cv2.resize(img, dsize=(141, 110), interpolation=cv2.INTER_CUBIC)
+    original = np.fft.fft2(img)
+    center = np.fft.fftshift(original)
+    LowPassCenter = center * gaussianLP(50, img.shape)
+    LowPass = np.fft.ifftshift(LowPassCenter)
+    inverse_LowPass = np.fft.ifft2(LowPass)
+    #i = Image.fromarray(np.array(inverse_LowPass, np.uint8))
+    #i.save(output_file_path)
+    #plt.figure(figsize=(1.4, 1.1), constrained_layout=False)
+    #plt.subplot(133)
+    #plt.imshow(np.abs(inverse_LowPass), "gray")
+    #plt.title("Gaussian Low Pass")
+    #plt.show()
+    return inverse_LowPass
+
+def resize_image(path, filename):
+    img = cv2.imread(path+filename, cv2.IMREAD_GRAYSCALE)
+    res = cv2.resize(img, dsize=(110,140), interpolation=cv2.INTER_AREA)
+#    (h, w) = res.shape[:2]
+#    # calculate the center of the image
+#    center = (w / 2, h / 2)
+#    angle90 = 90
+#    scale = 1.0
+#    # 270 degrees
+#    M = cv2.getRotationMatrix2D(center, angle90, scale)
+#    rotated270 = cv2.warpAffine(res, M, (h, w))
+    img = res.T
+    file_path = path + 'r_' + filename
+    cv2.imwrite(file_path, img)
 
 def main():
-    dataset_path = 'Dataset/'
+    dataset_path = 'processed_data/comp/'
     imageFileList = listdir(dataset_path)
     file_num = len(imageFileList)
     for i in range(file_num):
@@ -116,10 +163,22 @@ def main():
         file_path = dataset_path+fileNameStr
         if fileNameStr == '.DS_Store':
             continue
-        preprocess_image_file(dataset_path, fileNameStr)
+        #resize_image(dataset_path, fileNameStr)
+        #preprocess_image_file(dataset_path, fileNameStr)
+        fft_Gaussian_LowPass_filer(dataset_path, fileNameStr)
 
+    dataset_path = 'processed_data/uncomp/'
+    imageFileList = listdir(dataset_path)
+    file_num = len(imageFileList)
+    for i in range(file_num):
+        fileNameStr = imageFileList[i]
+        file_path = dataset_path+fileNameStr
+        if fileNameStr == '.DS_Store':
+            continue
+        #resize_image(dataset_path, fileNameStr)
+        #preprocess_image_file(dataset_path, fileNameStr)
+        fft_Gaussian_LowPass_filer(dataset_path, fileNameStr)
 
 
 if __name__ == '__main__':
     main()
-
