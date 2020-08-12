@@ -1,15 +1,25 @@
+import time
+
 import numpy as np
 
 from keras.models import Sequential
 from keras.layers import Conv2D, MaxPool2D,MaxPooling2D
 from keras.layers import Dense, Flatten, Reshape, Conv2DTranspose
 from sklearn import svm
-from sklearn.metrics import mean_squared_error
+from sklearn.ensemble import AdaBoostClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import mean_squared_error, roc_curve
 from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.model_selection import train_test_split
+from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import normalize
+from sklearn.tree import DecisionTreeClassifier
+
 from data_preprocessor import *
 from pandas.core.frame import DataFrame
+
+from utility_functions import get_confusion_matrix, total_accuracy, precision_average, plot_roc
 
 img_x = 141
 img_y = 110
@@ -48,18 +58,19 @@ def MSE(input,output,label, images):
     axes1.set_xlabel('Loss')
     axes1.set_ylabel('Similarity')
     #axes1.legend(*scatter1.legend_elements(), loc="best", title="label")
-    plt.savefig('result.png')
+    current_time = time.time()
+    plt.savefig(str(current_time)+'result.png')
     plt.close(0)
     print(data)
     return mse_list, cos_list
 
 
 # label: comp/uncomp
-def load_data():
+def load_data(root_path):
     label = list()
     DataMat = list()
     image_list = list()
-    dataset_path = './testset/yoda2/comp'
+    dataset_path = root_path+ '/comp'
     file_list = listdir(dataset_path)
     m = len(file_list)
     for i in range(m):
@@ -74,7 +85,7 @@ def load_data():
         DataMat.append(array)
         label.append("comp")
         image_list.append(file_name)
-    dataset_path = './testset/yoda2/uncomp'
+    dataset_path = root_path+'/uncomp'
     file_list = listdir(dataset_path)
     m = len(file_list)
     for i in range(m):
@@ -93,10 +104,10 @@ def load_data():
     DataArray /= 255
     return DataArray,label, image_list
 
-def draw_decision_buondray(mse_data_lst, cos_data_lst, label, images):
+def find_decision_boundray(mse_data_lst, cos_data_lst, label):
     df = {'MSE':mse_data_lst,'CosSim':cos_data_lst}
     data = DataFrame(df)
-    data_array = np.array(data)
+    data_array = np.array(data, np.float)
     X = data_array
     label_id = []
     for item in label:
@@ -106,14 +117,13 @@ def draw_decision_buondray(mse_data_lst, cos_data_lst, label, images):
             label_id.append(0)
 
     y = np.array(label_id, np.int)
-    h = .0001
+    h = .00001
     # we create an instance of SVM and fit out data. We do not scale our
     # data since we want to plot the support vectors
-    C = 10.0  # SVM regularization parameter
-    knn_clf = KNeighborsClassifier(n_neighbors=5).fit(X,y)
+    C = 0.0001  # SVM regularization parameter
     # create a mesh to plot in
-    x_min, x_max = X[:, 0].min() - 3*h, X[:, 0].max() + 3*h
-    y_min, y_max = X[:, 1].min() - h, X[:, 1].max() + 2*h
+    x_min, x_max = X[:, 0].min() - 30*h, X[:, 0].max() + 30*h
+    y_min, y_max = X[:, 1].min() - 10*h, X[:, 1].max() + 20*h
     xx, yy = np.meshgrid(np.arange(x_min, x_max, h),
                          np.arange(y_min, y_max, h))
 
@@ -122,7 +132,14 @@ def draw_decision_buondray(mse_data_lst, cos_data_lst, label, images):
               'SVC with polynomial (degree 3) kernel']
 
     #for i, clf in enumerate(( rbf_svc, poly_svc)):
-    clf = knn_clf
+    #clf = svm.SVC(kernel='poly',degree=2, gamma=1.0, random_state=42).fit(X,y)
+    #clf = LogisticRegression(random_state=42,max_iter=100, tol=0.1).fit(X,y)
+    #clf = DecisionTreeClassifier(random_state=42).fit(X,y)
+    #clf = KNeighborsClassifier(n_neighbors=5).fit(X,y)
+    #clf = GaussianNB().fit(X,y)
+    #clf = AdaBoostClassifier(n_estimators=100, random_state=0).fit(X,y)
+    clf = KNeighborsClassifier(n_neighbors=6).fit(X,y)
+
     # Plot the decision boundary. For that, we will assign a color to each
     # point in the mesh [x_min, x_max]x[y_min, y_max].
     plt.subplot(1, 1, 1)
@@ -135,19 +152,46 @@ def draw_decision_buondray(mse_data_lst, cos_data_lst, label, images):
     plt.contourf(xx, yy, Z, cmap=plt.cm.coolwarm, alpha=0.8)
 
     # Plot also the training points
-    plt.scatter(X[:, 0], X[:, 1], c=y, cmap=plt.cm.coolwarm, s=2)
-    for i in range(len(X)):
-        plt.text(X[i,0], X[i,1], images[i], fontsize='xx-small')
+    plt.scatter(X[:, 0], X[:, 1], c=y, cmap=plt.cm.coolwarm, s=0.5)
+#    for i in range(len(X)):
+#        if images[i].find('4_') == 0 and y[i] == 1:
+#            plt.text(X[i,0], X[i,1], images[i], fontsize='xx-small')
 
     plt.xlabel('MSE loss')
     plt.ylabel('Cos Similarity')
     plt.xlim(xx.min(), xx.max())
     plt.ylim(yy.min(), yy.max())
-    plt.xticks(np.arange(xx.min(), xx.max(), 5*h))
-    plt.yticks(np.arange(yy.min(), yy.max(), 10*h))
-    plt.title('KNN=4')
+    plt.xticks(np.arange(xx.min(), xx.max(), 50*h))
+    plt.yticks(np.arange(yy.min(), yy.max(), 20*h))
+    plt.title('KNN=6')
     #plt.show()
     plt.savefig('decision_boundary.png', dpi=300)
+
+    return clf
+
+def run_classifier(clf ,mse_data_lst, cos_data_lst, label):
+    df = {'MSE':mse_data_lst,'CosSim':cos_data_lst}
+    data = DataFrame(df)
+    data_array = np.array(data, np.float)
+    x_test = data_array
+    label_id = []
+    for item in label:
+        if item == 'comp':
+            label_id.append(1)
+        elif item == 'uncomp':
+            label_id.append(0)
+
+    targets_array = np.array(label_id, np.int)
+    X_train, X_test, y_train, y_test = train_test_split(data_array, targets_array, test_size=0.2, random_state=42)
+    clf = KNeighborsClassifier(n_neighbors=6).fit(X_train, y_train)
+    y_pred = clf.predict(X_test)
+    cm = get_confusion_matrix(y_test, y_pred, 2)
+    accuracy = total_accuracy(cm)
+    precision = precision_average(cm)
+    print( 'classifier is Confusion Matrix \n Predicted vs Actual \n{0}'.format(cm))
+    print( 'classifier is accuracy {0}'.format(accuracy*100))
+    print( 'classifier is precision {0}'.format(precision*100))
+
 
 
 def Autoncoder(x_train,label, images):
@@ -178,12 +222,15 @@ def Autoncoder(x_train,label, images):
     encoded = model.predict(x_train)
     print(2)
     mse_data_lst, cos_data_lst = MSE(x_train,encoded,label, images)
-    draw_decision_buondray(mse_data_lst, cos_data_lst, label, images)
-
+    return mse_data_lst, cos_data_lst
 
 def main():
-    x_train,label, image_lst= load_data()
-    Autoncoder(x_train,label, image_lst)
+    x_train,label, image_lst= load_data("./processed_data")
+    mse_data_lst, cos_data_lst = Autoncoder(x_train,label, image_lst)
+    clf = find_decision_boundray(mse_data_lst, cos_data_lst, label)
+    #x_test,test_label, test_image_lst= load_data("./testset")
+    #test_mse_data_lst, test_cos_data_lst = Autoncoder(x_test,test_label, test_image_lst)
+    run_classifier(clf,  mse_data_lst, cos_data_lst, label)
 
 
 if __name__ == '__main__':
