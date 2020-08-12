@@ -24,7 +24,7 @@ ECE657A Spring2020 Project Report}
 \begin{abstract}
 An accurate and quick display luminance uniformity evaluation function plays a key feedback role for the automated AMOLED Display aging compensation evaluation system. In this report we discuss a CNN autoencoder based luminance uniformity evaluation system which we designed and implemented for AMOLED display aging compensation performance evaluation. Within a short period of time we are able to design, implement the system and use the system to detect whether an aged AMOLED display has a high quality compensation, a low quality compensation or had no compensation in a relatively good accuracy rate.
 
-\keywords{ CNN autoencoder\and AMOLED Display Aging\and AMOLED Display Aging Compensation \and Luminance Uniformity}
+\keywords{ CNN autoencoder\and Active Matrix OLED - AMOLED\and AMOLED Display Aging\and AMOLED Display Aging Compensation \and Luminance Uniformity}
 \end{abstract}
 
 %
@@ -41,33 +41,30 @@ evaluation results. How to evaluate the quality of OLED aging compensation with 
 accurate approach is a technical challenge.
 During ECE657A project, we tried to develop an OLED aging compensation evaluation function to solve above technical challenge by using the knowledge and techniques which we have learned in this course. We build a prototype system which is having conceptual functionality works as expect. The system able to detect the AMOLED display OLED aging compensation quality is GOOD or BAD. GOOD compensation quality means with OLED aging compensation, the brightness uniformity on the OLED display is beyond a certain threshold. Apparently, there will be no visible burn-in aging area on display while smart phone is normally running.BAD compensation quality means with OLED aging compensation the brightness uniformity on the OLED display is below to a certain threshold. There could be some visible burn-in area still showing on OLED display
 
-
 \begin{figure}
     \centering
-    \includegraphics[width=0.3\textwidth]{uncomp.jpeg}
-    \caption{An AMOLED display was aged and has OLED burn-in shown on display}
+    \subfigure{
+        \includegraphics[width=0.4\textwidth]{uncomp.jpeg}}
+   \subfigure{
+        \includegraphics[width=0.4\textwidth]{comp.jpeg}}
+    \caption{ (a) An Aged AMOLED display (b)With OLED aging compensation,the same AMOLED display's burn-in is eliminated }
     \label{fig:1}
-\end{figure}
-\begin{figure}
-    \centering
-    \includegraphics[width=0.3\textwidth]{comp.jpeg}
-    \caption{With OLED aging compensation,the same AMOLED display's burn-in is eliminated}
-    \label{fig:2}
 \end{figure}
 
 \section{Literature review}
-In order to archive the project, except the materials we learned from ECE657A course, we also referenced a numbers of papers in the fields of image processing, machine learning ,deep learning and AMOLED display technologies. 
+In order to archive the project, except the materials we learned from ECE657A course, we also referenced a numbers of papers in the fields of image processing, machine learning ,deep learning and AMOLED display technologies.
 Peter Barten’s research on the contrast sensitivity of human eye [10] provides a formula for contrast sensitivity which is helpful to improve accuracy of result by minimize the contrast sensitivity various of human eye. This can be done by implementing contrast sensitivity function to emphasis the difference between AMOLED display's normal areas and OLED aging areas.
 Kazuki Tsutsukawa and his team at EIZO Corporation, developed an Evaluation system for Luminance Non-Uniformity Based on Deep Neural Networks. Their research paper shows that the possibility for using deep neural networks [4] to evaluate luminance non-uniformity automatically, which enables optimization of feature quantity extraction.
 
 \section{Design Considerations}
-We design the system under below considerations. Figure\ref{fig:3} shows a high level overall system diagram of our system. We will briefly discuss each part of the system in this section.
 \begin{figure}
     \centering
     \includegraphics[width=0.8\textwidth]{system_diagram.png}
     \caption{System Design Diagram}
     \label{fig:3}
 \end{figure}
+We design the system under below considerations. Figure\ref{fig:3} shows a high level overall system diagram of our system. We will briefly discuss each part of the system in this section.
+
 \subsection{System Input - Laod Training Dataset}
 System shall take image files from specified folder which contains two sub-folders - "comp" and " uncomp". They stores the panel image files. Folder "comp" contains panel images those have good quality compensation, folder "uncomp" contains panel images those have bad quality of compensation. The image file shall be either jpeg or png format. System will use these data folders as training datasets, the folder names "comp" and "uncomp" will be used later in the project as label.
 \subsection{Data Pre-process}
@@ -76,64 +73,78 @@ After loading the images, these images need to be pre-processed in order to fit 
 The data pre-processing need to preform image data integrity check.\\
 Data cleaning\\
 Resizing the image to meet the quality and speed requirements\\
-Run selected image filter to emphasis image's the non-uniform area. 
+Run selected image filter to emphasis image's the non-uniform area.
 \subsection{Auto-Encoder}
 Alyssa put more details\\
-The auto-encoder takes pre-processed image data as input data fit into auto-encoder, get auto-encoder's output data. Based on auto-encoder's input and output data calculate two indicators as 2 dimensional result. 
+The auto-encoder takes pre-processed image data as input data fit into auto-encoder, get auto-encoder's output data. Based on auto-encoder's input and output data calculate two indicators as 2 dimensional result.
 First indicator is Mean square error of input and output data. The second indicator is Cosine similarity of input and output data. \\
 \subsection{Find System Decision Boundary}
-After entire dataset went through auto-encoder, we shall get two dimensional data arrays of MSE and Cosine similarity, fit this 2D data array with "comp/uncomp" label information to a classifier, then we shall be able to find good/bad compensation quality decision boundary. 
+After entire dataset went through auto-encoder, we shall get two dimensional data arrays of MSE and Cosine similarity, fit this 2D data array with "comp/uncomp" label information to a classifier, then we shall be able to find good/bad compensation quality decision boundary.
 \subsection{Output}
 Once system and classifier was trained, the system shall be ready to take testing set to detect whether the display panel had a good or bad quality compensation.
 
 \section{System Implementation}
-Based on the design considerations those we discussed in previous section, we implemented the system with python. Here we will discuss more implementation details in this section. 
+Based on the design considerations those we discussed in previous section, we implemented the system with python. Here we will discuss more implementation details in this section.
 \subsection{Image pre-processing}
 Image pre-processor plays an important role in this system. As sample image loaded from dataset has to meet the requirements of autoencoder to archive the goal, and meet the quality and speed performance requirements.  We have implemented numbers of pre-process functionalities mainly in two parts. \\
 \begin{figure}
     \centering
-    \includegraphics[width=0.4\textwidth]{Pixel2-uncomp-original.jpeg}
+    \includegraphics[width=0.5\textwidth]{Pixel2-uncomp-original.jpeg}
     \caption{Original AMOLED panel Image}
     \label{fig:4}
 \end{figure}
 \begin{figure}
     \centering
-    \includegraphics[width=0.2\textwidth, angle=270]{Pixel2-Uncomp-g.jpeg}
+    \includegraphics[width=0.25\textwidth, angle=270]{Pixel2-Uncomp-g.jpeg}
     \caption{AMOLED Panel Image After Data Cleaning}
     \label{fig:5}
 \end{figure}
-In original image there are dark areas were taken by camera, they need to be cut, and dark areas at four corners need to be cleaned by filled with mean value.\\
-First part includes data cleaning, data resizing, data flatten, and etc. Figure\ref{fig:4} and figure\ref{fig:5} show AMOLED panel image before and after data cleaning process.\\
+
 \begin{figure}
     \centering
-    \includegraphics[width=0.6\textwidth]{surface_plot_fft_lowpass.png}
-    \caption{FFT Gaussian Low Pass Filter}
+    \includegraphics[width=0.5\textwidth]{surface_plot_fft_lowpass.png}
+    \caption{Image Data before and after FFT Gaussian Low Pass Filter}
     \label{fig:6}
 \end{figure}
+In original image there are dark areas were taken by camera, they need to be cut, and dark areas at four corners need to be cleaned by filled with mean value.\\
+First part includes data cleaning, data resizing, data flatten, and etc. Figure\ref{fig:4} and figure\ref{fig:5} show AMOLED panel image before and after data cleaning process.\\
+
 
 The second part of image pre-processing is image data filtering process. \\
-In our project proposal, we mentioned we planned to implement a CSF - Contrast Sensitivity Function, to reduce impact by the difference of sensitivity between each human eyes. However, while we are working on implementation we noticed that to be able to calculate the contrast sensitivity, we need four parameters, they are spatial frequency in cycle/degree, display luminance, surround luminance, Field of view in degree, we realized that we were lacking the equipment to measure surround area luminance data during the panel measurement. As the trade off, we decided to use FFT-Gaussian-LowPass filter to enhance the luminance difference between the nonuniform and uniform areas of AMOLED panels. The output from FFT-Gaussian-LowPass filter is used as Auto-encoder's input. Figure\ref{fig:6} shows that the pre-processed original image and the image after FFT-Gaussian-Lowpass filter processed. At here, compare with left side of plot, on the right side of plot, we can clearly see that after FFT-Gaussian-Lowpass filter processing, luminance difference between the compensated area and normal areas was enlarged.
-After image pre-processing phase, the pre-processed data will be passed to next major module - the CNN based autoencoder. 
+In our project proposal, we mentioned we planned to implement a CSF - Contrast Sensitivity Function, to reduce impact by the difference of sensitivity between each human eyes. However, while we are working on implementation we noticed that to be able to calculate the contrast sensitivity, we need four parameters, they are spatial frequency in cycle/degree, display luminance, surround luminance, Field of view in degree, we realized that we were lacking the equipment to measure surround area luminance data during the panel measurement. As the trade off, we decided to use FFT-Gaussian-LowPass filter to enhance the luminance difference between the nonuniform and uniform areas of AMOLED panels. The output from FFT-Gaussian-LowPass filter is used as Auto-encoder's input. \\
+Figure\ref{fig:6} shows that the pre-processed original image and the image after FFT-Gaussian-Lowpass filter processed. The image in this figure was a taken from a panel which had applied OLED compensation on the panel, however, the compensation wasn't perfect, as we still able to see little Burn-in on the panel, even them were not obvious, please see the left side of figure\ref{fig:6}. At here, let's compare the left side of plot with the right side of plot, we can clearly see that after FFT-Gaussian-Lowpass filter processing, luminance difference between the compensated area and normal areas was enlarged.
+After image pre-processing phase, the pre-processed data will be passed to next major module - the CNN based autoencoder.
 \subsection{CNN based Auto-encoder}
 
 \subsection{Choose Classifier and Decision Boundary}
 From auto-encoder, we get two sets of compensation quality evaluation indicators. MSE and Cosine Similarity. The next step is use these indicators and image sample label to train classifier, Classifier is trained with training dataset, after training the system is ready for the AMOLED aging compensation quality classification.\\
-Due to the limited samples, it gave us some difficulty to choose a classifier with better preformance, and clear decision boundary. We took some time to work on choosing suitable classifier for this project. Based on current image samples, finally we chose KNN as classifier with K equal to 4. Please see figure\ref{fig:7} which shows decision boundary based on KNN algorithm with training dataset. The decision boundary plot based on two performance indicators. The Y axis is Cosine similarity, and X Axis is Mean Square Error. As we can see, any image sample fall into the Left-Upper corner of the plot indicates the high compensation quality, on the other side indicates bad compensation quality.\\
-In the future as we could get more image samples, we would redo the evaluation for the classifier selection. We could have new decision boundary as compensation quality selection base.
- 
+Due to the limited samples, it gave us some difficulty to choose a classifier with better performance, and clear decision boundary. We took some time to work on choosing suitable classifier for this project. Based on current image samples, finally we chose KNN as classifier with K equal to 6. Please see figure\ref{fig:7} which shows decision boundary based on KNN algorithm with training dataset. The decision boundary plot based on two performance indicators. The Y axis is Cosine similarity, and X Axis is Mean Square Error. As we can see, any image sample fall into the Left-Upper corner of the plot indicates the high compensation quality, on the other side indicates bad compensation quality.\\
+In the future as we could get more image samples, we would redo the evaluation for the classifier selection, and then we could have more accurate decision boundary based on larger dataset as compensation quality selection base.
+
 \begin{figure}
     \centering
-    \includegraphics[width=0.5\textwidth]{decision-boundary.png}
+    \includegraphics[width=0.8\textwidth]{decision_boundary.png}
     \caption{Decision Boundary}
     \label{fig:7}
-\end{figure}\\
+\end{figure}
 
 \section{System Performance Evaluation}
-
+\begin{table}[]
+    \centering
+    \begin{tabular}{cc}
+    & Actual \\
+    Predicted &
+        14 & 0 \\
+        1 & 7\\
+    \end{tabular}
+    \caption{Classifier Confusion Matrix}
+    \label{tab:my_label}
+\end{table}
+classifier is accuracy 90.9\%\\
+classifier is precision 93.75\%\\
 \section{Discussion}
 
 \section{Conclusion and Future work}
 
 \section{Reference}
 \end{document}
-
