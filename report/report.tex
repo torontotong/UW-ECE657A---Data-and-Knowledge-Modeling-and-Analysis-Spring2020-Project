@@ -188,7 +188,7 @@ In the future as we could get more image samples, we would redo the evaluation f
 \section{System Validation}
 Once decided to use KNN classifier with K equal to 6,  we validated system with following procedure.
 \subsubsection{Testing and Result Accuracy}
-We use total 87 panel images as trainig dataset, and take another 22 panel images as test dataset. These panel images were pre-classified and labeled manually in the previous work. Both training dataset and test dataset ran through the pre-processing and auto-encoder, then we got MSE and Cosine similarity sets for training datseta and test dataset. Fit training dataset MSE/cosine similarity to KNN classifier first, then fit test dataset's MSE/cosine similarity to KNN classifier to get predicted result.
+We use total 87 panel images as trainig dataset, and take another 22 panel images as test dataset. These panel images were pre-classified and labeled manually in the previous work. There are 8 sample images labeled as "Good" and 14 sample images labeled as "Bad" within test dataset. Both training dataset and test dataset ran through the pre-processing and auto-encoder, then we got MSE and Cosine similarity sets for training datseta and test dataset. Fit training dataset MSE/cosine similarity to KNN classifier first, then fit test dataset's MSE/cosine similarity to KNN classifier to get predicted result.
 Finally we got confusion matrix as Table.\ref{tab:cm}, based on confusion matrix we calculated classifier accuracy was 95.5\%, and classifier precision was 96.7\%\\
 \begin{table}
     \centering
