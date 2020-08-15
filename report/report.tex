@@ -206,14 +206,14 @@ We ran the test on a PC with Intel-i7 8Cores CPU, Intel HD-Graphics630 GPU and 1
 How to evaluate the quality of compensation of AMOLED display panel in an accurate and fast way, is technical challenge. For comparison, we also ran a experiment with a pure classification process with SVM with linear and RBF kernel. Both svm kernels brought us lower accuracy about 57.1\% and 65.2\%. This shows that difficulty of feature extracting and evaluate the luminance difference accurately between good and bad compensation. Because of that, using a pure classic classifier like SVM to evaluate panel image luminance uniformity couldn't bring us accurate result.\\
 Our approach is focus on emphasis the luminance differences by using FFT-Gaussian-lowpass filter, and furthermore, using a convolution neural network based auto-encoder, at end calculate two indicators MSE and cosine similarity, and use them to identify the image quality class to give us better accuracy for about 95.5\% .
 \section{Conclusion and Future work}
-\subsection{Conclution}
+\subsection{Conclusion}
 In this project we were able to build a rapid AMOLED aging compensation evaluation system based on the knowledge that we learned in course ECE657A. We designed and implemented the system which is consist of an image pre-processor, a Convolution Auto Encoder, and a Classifier. The overall performance is about 1 second of image processing time and 95.5\% of accuracy, this result is impressive to compare with human vision based manual classification process.
 \subsection{Future work}
 As the consideration of future work, here are few points we would improve in the future.
 \subsubsection{Retrain the system with larger sample dataset}
 Larger sample set always helps to improve system accuracy, especially help for finding more accurate decision boundary. Re-select suitable classifier if needed.
 \subsubsection{To improve classification}
-Now we can classify AMOLED aging compensation is Good or Bad compensation. However, it will be great to classify bad compensation as Under-compensated or Over-compensated. That is important function for an automated AMOLED panel calibration system. It could get feedback from evaluation system to know whether the panel is under-compensated or over-compensated to adjust compensation accuracy.
+Now we can classify AMOLED ageing compensation is Good or Bad compensation. However, it will be great to classify bad compensation as Under-compensated or Over-compensated. That is important function for an automated AMOLED panel calibration system. It could get feedback from evaluation system to know whether the panel is under-compensated or over-compensated to adjust compensation accuracy.
 %
 % ---- Bibliography ----
 %
