@@ -1,4 +1,5 @@
-# ece657A_Spring2020_Project
+# UW ECE657A - Data and Knowledge Modeling and Analysis
+# Spring2020 Term Project
 UW ECE657A Course project repo
 
 
